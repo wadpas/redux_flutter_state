@@ -35,6 +35,22 @@ class ChangeFilterTypeAction extends Action {
 }
 
 @immutable
+abstract class ItemAction extends Action {
+  final String item;
+  const ItemAction(this.item);
+}
+
+@immutable
+class AddItemAction extends ItemAction {
+  const AddItemAction(String item) : super(item);
+}
+
+@immutable
+class RemoveItemAction extends ItemAction {
+  const RemoveItemAction(String item) : super(item);
+}
+
+@immutable
 abstract class Action {
   const Action();
 }
