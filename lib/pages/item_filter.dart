@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' as hooks;
 import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
@@ -33,7 +34,7 @@ class State {
 @immutable
 class ChangeFilterTypeAction extends Action {
   final ItemFilter filter;
-  const ChangeFilterTypeAction({required this.filter});
+  const ChangeFilterTypeAction(this.filter);
 }
 
 @immutable
@@ -95,14 +96,56 @@ State appStateReducer(State oldState, action) => State(
       filter: itemFilterReducer(oldState, action),
     );
 
-class ItemFilterPage extends StatelessWidget {
+class ItemFilterPage extends hooks.HookWidget {
   const ItemFilterPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final store = Store(
+      appStateReducer,
+      initialState: const State(
+        items: [],
+        filter: ItemFilter.all,
+      ),
+    );
+    final textController = hooks.useTextEditingController();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Item Filter'),
+      ),
+      body: StoreProvider(
+        store: store,
+        child: Column(children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  store.dispatch(
+                    const ChangeFilterTypeAction(ItemFilter.all),
+                  );
+                },
+                child: const Text('All'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  store.dispatch(
+                    const ChangeFilterTypeAction(ItemFilter.shortText),
+                  );
+                },
+                child: const Text('Short items'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  store.dispatch(
+                    const ChangeFilterTypeAction(ItemFilter.longText),
+                  );
+                },
+                child: const Text('Long items'),
+              )
+            ],
+          )
+        ]),
       ),
     );
   }
