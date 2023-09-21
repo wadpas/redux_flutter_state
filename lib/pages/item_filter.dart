@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 enum ItemFilter {
   all,
@@ -54,6 +56,44 @@ class RemoveItemAction extends ItemAction {
 abstract class Action {
   const Action();
 }
+
+extension AddRemoveItems<T> on Iterable<T> {
+  Iterable<T> operator +(T other) => followedBy([other]);
+  Iterable<T> operator -(T other) => where((element) => element != other);
+}
+
+Iterable<String> addItemReducer(
+  Iterable<String> previousItems,
+  AddItemAction action,
+) =>
+    previousItems + action.item;
+
+Iterable<String> removeItemReducer(
+  Iterable<String> previousItems,
+  RemoveItemAction action,
+) =>
+    previousItems - action.item;
+
+Reducer<Iterable<String>> itemsReducer = combineReducers<Iterable<String>>([
+  TypedReducer<Iterable<String>, AddItemAction>(addItemReducer),
+  TypedReducer<Iterable<String>, RemoveItemAction>(removeItemReducer),
+]);
+
+ItemFilter itemFilterReducer(
+  State oldState,
+  Action action,
+) {
+  if (action is ChangeFilterTypeAction) {
+    return action.filter;
+  } else {
+    return oldState.filter;
+  }
+}
+
+State appStateReducer(State oldState, action) => State(
+      items: itemsReducer(oldState.items, action),
+      filter: itemFilterReducer(oldState, action),
+    );
 
 class ItemFilterPage extends StatelessWidget {
   const ItemFilterPage({super.key});
