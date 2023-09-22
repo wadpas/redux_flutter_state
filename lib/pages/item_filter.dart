@@ -115,37 +115,69 @@ class ItemFilterPage extends hooks.HookWidget {
       ),
       body: StoreProvider(
         store: store,
-        child: Column(children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  store.dispatch(
-                    const ChangeFilterTypeAction(ItemFilter.all),
-                  );
-                },
-                child: const Text('All'),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    store.dispatch(
+                      const ChangeFilterTypeAction(ItemFilter.all),
+                    );
+                  },
+                  child: const Text('All'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    store.dispatch(
+                      const ChangeFilterTypeAction(ItemFilter.shortText),
+                    );
+                  },
+                  child: const Text('Short items'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    store.dispatch(
+                      const ChangeFilterTypeAction(ItemFilter.longText),
+                    );
+                  },
+                  child: const Text('Long items'),
+                )
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: textController,
               ),
-              ElevatedButton(
-                onPressed: () {
-                  store.dispatch(
-                    const ChangeFilterTypeAction(ItemFilter.shortText),
-                  );
-                },
-                child: const Text('Short items'),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      final text = textController.text;
+                      store.dispatch(AddItemAction(text));
+                      textController.clear();
+                    },
+                    child: const Text('Add'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      final text = textController.text;
+                      store.dispatch(RemoveItemAction(text));
+                      textController.clear();
+                    },
+                    child: const Text('Remove'),
+                  ),
+                ],
               ),
-              ElevatedButton(
-                onPressed: () {
-                  store.dispatch(
-                    const ChangeFilterTypeAction(ItemFilter.longText),
-                  );
-                },
-                child: const Text('Long items'),
-              )
-            ],
-          )
-        ]),
+            ),
+          ],
+        ),
       ),
     );
   }
