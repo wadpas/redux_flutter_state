@@ -5,8 +5,8 @@ import 'package:flutter_redux/flutter_redux.dart';
 
 enum ItemFilter {
   all,
-  longText,
-  shortText,
+  longTexts,
+  shortTexts,
 }
 
 @immutable
@@ -23,10 +23,10 @@ class State {
     switch (filter) {
       case ItemFilter.all:
         return items;
-      case ItemFilter.longText:
-        return items.where((item) => items.length >= 10);
-      case ItemFilter.shortText:
-        return items.where((item) => items.length <= 3);
+      case ItemFilter.longTexts:
+        return items.where((item) => item.length >= 10);
+      case ItemFilter.shortTexts:
+        return items.where((item) => item.length <= 3);
     }
   }
 }
@@ -115,68 +115,85 @@ class ItemFilterPage extends hooks.HookWidget {
       ),
       body: StoreProvider(
         store: store,
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    store.dispatch(
-                      const ChangeFilterTypeAction(ItemFilter.all),
-                    );
-                  },
-                  child: const Text('All'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    store.dispatch(
-                      const ChangeFilterTypeAction(ItemFilter.shortText),
-                    );
-                  },
-                  child: const Text('Short items'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    store.dispatch(
-                      const ChangeFilterTypeAction(ItemFilter.longText),
-                    );
-                  },
-                  child: const Text('Long items'),
-                )
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                controller: textController,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            children: [
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      final text = textController.text;
-                      store.dispatch(AddItemAction(text));
-                      textController.clear();
+                      store.dispatch(
+                        const ChangeFilterTypeAction(ItemFilter.all),
+                      );
                     },
-                    child: const Text('Add'),
+                    child: const Text('All'),
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      final text = textController.text;
-                      store.dispatch(RemoveItemAction(text));
-                      textController.clear();
+                      store.dispatch(
+                        const ChangeFilterTypeAction(ItemFilter.shortTexts),
+                      );
                     },
-                    child: const Text('Remove'),
+                    child: const Text('Short items'),
                   ),
+                  ElevatedButton(
+                    onPressed: () {
+                      store.dispatch(
+                        const ChangeFilterTypeAction(ItemFilter.longTexts),
+                      );
+                    },
+                    child: const Text('Long items'),
+                  )
                 ],
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: textController,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        final text = textController.text;
+                        store.dispatch(AddItemAction(text));
+                        textController.clear();
+                      },
+                      child: const Text('Add'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        final text = textController.text;
+                        store.dispatch(RemoveItemAction(text));
+                        textController.clear();
+                      },
+                      child: const Text('Remove'),
+                    ),
+                  ],
+                ),
+              ),
+              StoreConnector<State, Iterable<String>>(
+                converter: (store) => store.state.filteredItems,
+                builder: (context, items) {
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final item = items.elementAt(index);
+                        return ListTile(title: Text(item));
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

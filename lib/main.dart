@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
         textTheme: GoogleFonts.mulishTextTheme().copyWith(
-          labelLarge: const TextStyle(fontSize: 18),
+          labelLarge: const TextStyle(fontSize: 16),
         ),
       ),
       home: const HomePage(),
