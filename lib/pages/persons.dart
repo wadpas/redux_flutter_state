@@ -51,6 +51,24 @@ class FailFetchedPeopleAction extends Action {
   const FailFetchedPeopleAction({required this.error});
 }
 
+@immutable
+class State {
+  final bool isLoading;
+  final Iterable<String>? fetchedPersons;
+  final Object? error;
+
+  const State({
+    required this.isLoading,
+    required this.fetchedPersons,
+    required this.error,
+  });
+
+  const State.empty()
+      : isLoading = false,
+        fetchedPersons = null,
+        error = null;
+}
+
 class PersonsPage extends StatelessWidget {
   const PersonsPage({super.key});
 
