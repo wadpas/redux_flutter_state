@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 const apiUrl = 'http://127.0.0.1:5500/api/people.json';
@@ -19,6 +21,13 @@ class Person {
   @override
   String toString() => 'Person ($name, $age years old)';
 }
+
+Future<Iterable<Person>> getPerson() => HttpClient()
+    .getUrl(Uri.parse(apiUrl))
+    .then((req) => req.close())
+    .then((resp) => resp.transform(utf8.decoder).join())
+    .then((str) => json.decode(str) as List<dynamic>)
+    .then((list) => list.map((e) => Person.fromJson(e)));
 
 class PersonsPage extends StatelessWidget {
   const PersonsPage({super.key});
