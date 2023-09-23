@@ -54,7 +54,7 @@ class FailFetchedPeopleAction extends Action {
 @immutable
 class State {
   final bool isLoading;
-  final Iterable<String>? fetchedPersons;
+  final Iterable<Person>? fetchedPersons;
   final Object? error;
 
   const State({
@@ -67,6 +67,29 @@ class State {
       : isLoading = false,
         fetchedPersons = null,
         error = null;
+}
+
+State reducer(State oldState, action) {
+  if (action is LoadPeopleAction) {
+    return const State(
+      error: null,
+      fetchedPersons: null,
+      isLoading: true,
+    );
+  } else if (action is SucFetchedPeopleAction) {
+    return State(
+      isLoading: false,
+      fetchedPersons: action.persons,
+      error: null,
+    );
+  } else if (action is FailFetchedPeopleAction) {
+    return State(
+      isLoading: false,
+      fetchedPersons: oldState.fetchedPersons,
+      error: action.error,
+    );
+  }
+  return oldState;
 }
 
 class PersonsPage extends StatelessWidget {
