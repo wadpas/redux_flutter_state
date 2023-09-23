@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
 
 const apiUrl = 'http://127.0.0.1:5500/api/people.json';
 
@@ -90,6 +91,21 @@ State reducer(State oldState, action) {
     );
   }
   return oldState;
+}
+
+void loadPeopleMiddleware(
+  Store<State> store,
+  action,
+  NextDispatcher next,
+) {
+  if (action is LoadPeopleAction) {
+    getPerson().then((persons) {
+      store.dispatch(SucFetchedPeopleAction(persons: persons));
+    }).catchError((e) {
+      store.dispatch(FailFetchedPeopleAction(error: e));
+    });
+  }
+  next(action);
 }
 
 class PersonsPage extends StatelessWidget {
