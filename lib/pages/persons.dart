@@ -29,6 +29,28 @@ Future<Iterable<Person>> getPerson() => HttpClient()
     .then((str) => json.decode(str) as List<dynamic>)
     .then((list) => list.map((e) => Person.fromJson(e)));
 
+@immutable
+abstract class Action {
+  const Action();
+}
+
+@immutable
+class LoadPeopleAction extends Action {
+  const LoadPeopleAction();
+}
+
+@immutable
+class SucFetchedPeopleAction extends Action {
+  final Iterable<Person> persons;
+  const SucFetchedPeopleAction({required this.persons});
+}
+
+@immutable
+class FailFetchedPeopleAction extends Action {
+  final Object error;
+  const FailFetchedPeopleAction({required this.error});
+}
+
 class PersonsPage extends StatelessWidget {
   const PersonsPage({super.key});
 
