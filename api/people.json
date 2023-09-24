@@ -1,14 +1,20 @@
 [
   {
+    "id": "1",
     "name": "John",
-    "age": 38
+    "age": 38,
+    "image_url": "https://img.freepik.com/free-photo/portrait-white-man-isolated_53876-40306.jpg"
   },
   {
+    "id": "2",
     "name": "Alice",
-    "age": 26
+    "age": 26,
+    "image_url": "https://img.freepik.com/free-photo/beautiful-face-young-woman-with-clean-fresh-skin-isolated-white_186202-7897.jpg"
   },
   {
-    "name": "Nicole",
-    "age": 46
+    "id": "3",
+    "name": "Mike",
+    "age": 23,
+    "image_url": "https://img.freepik.com/premium-photo/portrait-young-handsome-guy-gray-t-shirt_150254-1028.jpg"
   }
 ]

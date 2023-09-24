@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -8,17 +9,42 @@ const apiUrl = 'http://10.0.2.2:5500/api/people.json';
 
 @immutable
 class Person {
+  final String id;
   final String name;
   final int age;
+  final String imageUrl;
+  final Uint8List? imageData;
+  final bool isLoading;
+
+  Person copiedWith([
+    bool? isLoading,
+    Uint8List? imageData,
+  ]) =>
+      Person(
+        id: id,
+        name: name,
+        age: age,
+        imageUrl: imageUrl,
+        imageData: imageData ?? this.imageData,
+        isLoading: isLoading ?? this.isLoading,
+      );
 
   const Person({
+    required this.id,
     required this.name,
     required this.age,
+    required this.imageUrl,
+    required this.imageData,
+    required this.isLoading,
   });
 
   Person.fromJson(Map<String, dynamic> json)
-      : name = json['name'] as String,
-        age = json['age'] as int;
+      : id = json['id'] as String,
+        name = json['name'] as String,
+        age = json['age'] as int,
+        imageUrl = json['image_url'] as String,
+        imageData = null,
+        isLoading = false;
 
   @override
   String toString() => 'Person ($name, $age years old)';
