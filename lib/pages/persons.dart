@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
-const apiUrl = 'http://127.0.0.1:5500/api/people.json';
+const apiUrl = 'http://10.0.2.2:5500/api/people.json';
 
 @immutable
 class Person {
@@ -113,22 +114,62 @@ class PersonsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Persons Page'),
-      ),
-      body: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            margin: const EdgeInsets.all(8),
-            child: ElevatedButton(
-              onPressed: () {},
-              child: const Text('Button'),
-            ),
-          )
-        ],
-      ),
+    final store = Store(
+      reducer,
+      initialState: const State.empty(),
+      middleware: [loadPeopleMiddleware],
     );
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Persons Page'),
+        ),
+        body: StoreProvider(
+          store: store,
+          child: SizedBox(
+            width: double.infinity,
+            child: Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    store.dispatch(const LoadPeopleAction());
+                  },
+                  child: const Text('Load Persons'),
+                ),
+                StoreConnector<State, bool>(
+                  converter: (store) => store.state.isLoading,
+                  builder: (context, isLoading) {
+                    if (isLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else {
+                      return const SizedBox();
+                    }
+                  },
+                ),
+                StoreConnector<State, Iterable<Person>?>(
+                  converter: (store) => store.state.fetchedPersons,
+                  builder: (context, persons) {
+                    if (persons == null) {
+                      return const SizedBox();
+                    } else {
+                      return Expanded(
+                        child: ListView.builder(
+                            itemCount: persons.length,
+                            itemBuilder: (context, index) {
+                              final person = persons.elementAt(index);
+                              return ListTile(
+                                title: Text(person.name),
+                                subtitle: Text('${person.age} years old'),
+                              );
+                            }),
+                      );
+                    }
+                  },
+                )
+              ],
+            ),
+          ),
+        ));
   }
 }
