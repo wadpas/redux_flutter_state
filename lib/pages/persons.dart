@@ -47,7 +47,7 @@ class Person {
         isLoading = false;
 
   @override
-  String toString() => 'Person ($name, $age years old)';
+  String toString() => 'Person ($id, $name, $age years old)';
 }
 
 Future<Iterable<Person>> getPerson() => HttpClient()
@@ -85,6 +85,9 @@ class State {
   final Iterable<Person>? fetchedPersons;
   final Object? error;
 
+  Iterable<Person>? get sortedFetchedPersons => fetchedPersons?.toList()
+    ?..sort((p1, p2) => int.parse(p1.id).compareTo(int.parse(p2.id)));
+
   const State({
     required this.isLoading,
     required this.fetchedPersons,
@@ -97,8 +100,40 @@ class State {
         error = null;
 }
 
+@immutable
+class LoadPersonImageAction extends Action {
+  final String personId;
+  const LoadPersonImageAction({required this.personId});
+}
+
+@immutable
+class SucLoadedImageAction extends Action {
+  final String personId;
+  final Uint8List imageData;
+
+  const SucLoadedImageAction({
+    required this.personId,
+    required this.imageData,
+  });
+}
+
 State reducer(State oldState, action) {
-  if (action is LoadPeopleAction) {
+  if (action is LoadPersonImageAction) {
+    final person = oldState.fetchedPersons?.firstWhere(
+      (p) => p.id == action.personId,
+    );
+    if (person != null) {
+      return State(
+        isLoading: false,
+        fetchedPersons: oldState.fetchedPersons
+            ?.where((p) => p.id != person.id)
+            .followedBy([person.copiedWith(true)]),
+        error: oldState.error,
+      );
+    } else {
+      return oldState;
+    }
+  } else if (action is LoadPeopleAction) {
     return const State(
       error: null,
       fetchedPersons: null,
