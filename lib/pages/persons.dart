@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
@@ -118,7 +118,22 @@ class SucLoadedImageAction extends Action {
 }
 
 State reducer(State oldState, action) {
-  if (action is LoadPersonImageAction) {
+  if (action is SucLoadedImageAction) {
+    final person = oldState.fetchedPersons?.firstWhere(
+      (p) => p.id == action.personId,
+    );
+    if (person != null) {
+      return State(
+        isLoading: false,
+        fetchedPersons: oldState.fetchedPersons
+            ?.where((p) => p.id != person.id)
+            .followedBy([person.copiedWith(false, action.imageData)]),
+        error: oldState.error,
+      );
+    } else {
+      return oldState;
+    }
+  } else if (action is LoadPersonImageAction) {
     final person = oldState.fetchedPersons?.firstWhere(
       (p) => p.id == action.personId,
     );
@@ -170,6 +185,27 @@ void loadPeopleMiddleware(
   next(action);
 }
 
+void loadImageMiddleware(
+  Store<State> store,
+  action,
+  NextDispatcher next,
+) {
+  if (action is LoadPersonImageAction) {
+    final person = store.state.fetchedPersons?.firstWhere(
+      (p) => p.id == action.personId,
+    );
+    if (person != null) {
+      final url = person.imageUrl;
+      final bundle = NetworkAssetBundle(Uri.parse(url));
+      bundle.load(url).then((bd) => bd.buffer.asUint8List()).then((data) {
+        store.dispatch(
+            SucLoadedImageAction(personId: person.id, imageData: data));
+      });
+    }
+  }
+  next(action);
+}
+
 class PersonsPage extends StatelessWidget {
   const PersonsPage({super.key});
 
@@ -178,7 +214,7 @@ class PersonsPage extends StatelessWidget {
     final store = Store(
       reducer,
       initialState: const State.empty(),
-      middleware: [loadPeopleMiddleware],
+      middleware: [loadPeopleMiddleware, loadImageMiddleware],
     );
     return Scaffold(
         appBar: AppBar(
@@ -209,7 +245,7 @@ class PersonsPage extends StatelessWidget {
                   },
                 ),
                 StoreConnector<State, Iterable<Person>?>(
-                  converter: (store) => store.state.fetchedPersons,
+                  converter: (store) => store.state.sortedFetchedPersons,
                   builder: (context, persons) {
                     if (persons == null) {
                       return const SizedBox();
@@ -219,9 +255,33 @@ class PersonsPage extends StatelessWidget {
                             itemCount: persons.length,
                             itemBuilder: (context, index) {
                               final person = persons.elementAt(index);
+                              final infoWidget =
+                                  Text('${person.age} years old');
+                              final Widget subtitle = person.imageData == null
+                                  ? infoWidget
+                                  : Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        infoWidget,
+                                        Image.memory(person.imageData!)
+                                      ],
+                                    );
+                              final Widget trailing = person.isLoading
+                                  ? const CircularProgressIndicator()
+                                  : TextButton(
+                                      onPressed: () {
+                                        store.dispatch(
+                                          LoadPersonImageAction(
+                                              personId: person.id),
+                                        );
+                                      },
+                                      child: const Text('Load Image'));
+
                               return ListTile(
                                 title: Text(person.name),
-                                subtitle: Text('${person.age} years old'),
+                                subtitle: subtitle,
+                                trailing: trailing,
                               );
                             }),
                       );
